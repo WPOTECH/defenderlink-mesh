@@ -1,0 +1,226 @@
+package com.defenderlink.mesh.api;
+
+import com.defenderlink.mesh.gossip.GossipService;
+import com.defenderlink.mesh.identity.NodeIdentity;
+import com.defenderlink.mesh.ledger.consensus.RaftConsensus;
+import com.defenderlink.mesh.ledger.model.LedgerEntry;
+import com.defenderlink.mesh.ledger.model.LedgerEntry.*;
+import com.defenderlink.mesh.ledger.store.LedgerStore;
+import com.defenderlink.mesh.ledger.store.LedgerStore.*;
+import com.defenderlink.mesh.proxy.InterceptProxy;
+import com.defenderlink.mesh.service.ServiceRegistry;
+import com.defenderlink.mesh.tunnel.TunnelManager;
+import com.defenderlink.mesh.tunnel.TunnelManager.ActiveTunnel;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.util.*;
+
+@Path("/api")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class MeshResource {
+
+    @Inject NodeIdentity identity;
+    @Inject LedgerStore ledger;
+    @Inject RaftConsensus raft;
+    @Inject GossipService gossip;
+    @Inject ServiceRegistry registry;
+    @Inject TunnelManager tunnelManager;
+    @Inject InterceptProxy interceptProxy;
+
+    private static final Logger log = LoggerFactory.getLogger(MeshResource.class);
+
+    // =========================================================================
+    // Node Identity & Status
+    // =========================================================================
+
+    @GET @Path("/status")
+    public Map<String, Object> status() {
+        return Map.of(
+                "nodeId", identity.getNodeId(),
+                "shortId", identity.shortId(),
+                "raftState", raft.getState().name(),
+                "raftTerm", raft.getCurrentTerm(),
+                "leader", raft.getCurrentLeader() != null
+                        ? raft.getCurrentLeader().substring(0, 16) : "none",
+                "chainHeight", ledger.getChainHeight(),
+                "knownPeers", gossip.getKnownPeers().size(),
+                "registeredNodes", ledger.getNodes().size(),
+                "activeServices", ledger.getServices().stream()
+                        .filter(ServiceRecord::active).count(),
+                "activeTunnels", tunnelManager.getActiveTunnels().size()
+        );
+    }
+
+    @GET @Path("/identity")
+    public Map<String, String> getIdentity() {
+        return Map.of(
+                "nodeId", identity.getNodeId(),
+                "publicKey", identity.getPublicKeyBase64()
+        );
+    }
+
+    // =========================================================================
+    // Node Registration
+    // =========================================================================
+
+    /** Register this node in the mesh ledger */
+    @POST @Path("/node/register")
+    public Response registerNode(RegisterRequest req) {
+        NodeRegister entry = new NodeRegister(
+                identity.getNodeId(),
+                identity.getPublicKeyBase64(), // WireGuard key derived from same curve
+                req.endpoints() != null ? req.endpoints() : List.of(),
+                req.capabilities() != null ? req.capabilities() : List.of("tunnel"),
+                req.displayName(),
+                Instant.now(),
+                identity.sign((identity.getNodeId() + "register").getBytes())
+        );
+        raft.submitEntry(entry);
+        return Response.accepted(Map.of("status", "submitted", "nodeId", identity.shortId())).build();
+    }
+
+    /** Deregister this node from the mesh */
+    @POST @Path("/node/deregister")
+    public Response deregisterNode() {
+        NodeDeregister entry = new NodeDeregister(
+                identity.getNodeId(), "voluntary",
+                Instant.now(),
+                identity.sign((identity.getNodeId() + "deregister").getBytes())
+        );
+        raft.submitEntry(entry);
+        return Response.accepted(Map.of("status", "submitted")).build();
+    }
+
+    // =========================================================================
+    // Service Management
+    // =========================================================================
+
+    /** Expose a local service to specific peers */
+    @POST @Path("/services/expose")
+    public Response exposeService(ExposeRequest req) {
+        ServiceRecord svc = registry.exposeService(
+                req.serviceId(), req.protocol(), req.localBind(), req.allowedNodes());
+        return Response.accepted(Map.of(
+                "status", "submitted",
+                "serviceId", svc.serviceId(),
+                "assignedPort", svc.assignedPort(),
+                "accessibleBy", svc.allowedNodes().size() + " nodes"
+        )).build();
+    }
+
+    /** Revoke a service */
+    @POST @Path("/services/{serviceId}/revoke")
+    public Response revokeService(@PathParam("serviceId") String serviceId,
+                                   RevokeRequest req) {
+        registry.revokeService(serviceId, req.reason());
+        tunnelManager.destroyTunnel(serviceId);
+        return Response.accepted(Map.of("status", "submitted")).build();
+    }
+
+    /** List all services in the mesh */
+    @GET @Path("/services")
+    public Collection<ServiceRecord> listServices() {
+        return ledger.getServices();
+    }
+
+    /** List services accessible by this node */
+    @GET @Path("/services/accessible")
+    public List<ServiceRecord> accessibleServices() {
+        return registry.getAccessibleServices();
+    }
+
+    /** List services exposed by this node */
+    @GET @Path("/services/exposed")
+    public List<ServiceRecord> exposedServices() {
+        return registry.getExposedServices();
+    }
+
+    // =========================================================================
+    // Tunnel Management
+    // =========================================================================
+
+    /** Connect to a remote service (creates tunnel + intercept proxy) */
+    @POST @Path("/connect/{serviceId}")
+    public Response connectToService(@PathParam("serviceId") String serviceId) {
+        try {
+            ActiveTunnel tunnel = tunnelManager.ensureTunnel(serviceId);
+            // interceptProxy.startIntercept() is now called inside ensureTunnel()
+            return Response.ok(Map.of(
+                    "status",        tunnel.state().name(),
+                    "serviceId",     serviceId,
+                    "connectTo",     "127.0.0.1:" + tunnel.interceptLocalPort(),
+                    "tunnelIf",      tunnel.ifName,
+                    "peerTunnelIp",  tunnel.peerTunnelIp()
+            )).build();
+        } catch (Exception e) {
+            log.error("Connect failed for '{}'", serviceId, e);
+            return Response.serverError()
+                    .entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
+    /** Disconnect from a service (destroys tunnel + stops proxy) */
+    @POST @Path("/disconnect/{serviceId}")
+    public Response disconnectService(@PathParam("serviceId") String serviceId) {
+        interceptProxy.stopIntercept(serviceId);
+        tunnelManager.destroyTunnel(serviceId);
+        return Response.ok(Map.of("status", "disconnected", "serviceId", serviceId)).build();
+    }
+
+    /** List active tunnels */
+    @GET @Path("/tunnels")
+    public Map<String, ActiveTunnel> listTunnels() {
+        return tunnelManager.getActiveTunnels();
+    }
+
+    // =========================================================================
+    // Ledger & Mesh Queries
+    // =========================================================================
+
+    /** List all registered nodes */
+    @GET @Path("/nodes")
+    public Collection<NodeRecord> listNodes() {
+        return ledger.getNodes();
+    }
+
+    /** List known peers (gossip layer, may include unregistered) */
+    @GET @Path("/peers")
+    public Collection<GossipService.PeerInfo> listPeers() {
+        return gossip.getKnownPeers();
+    }
+
+    /** Get ledger block by index */
+    @GET @Path("/ledger/block/{index}")
+    public Response getBlock(@PathParam("index") long index) {
+        return ledger.getBlock(index)
+                .map(b -> Response.ok(b).build())
+                .orElse(Response.status(404).build());
+    }
+
+    /** Get chain info */
+    @GET @Path("/ledger/info")
+    public Map<String, Object> ledgerInfo() {
+        return Map.of(
+                "height", ledger.getChainHeight(),
+                "lastBlockHash", ledger.getLastBlock() != null
+                        ? ledger.getLastBlock().hash().substring(0, 32) : "genesis"
+        );
+    }
+
+    // =========================================================================
+    // Request DTOs
+    // =========================================================================
+
+    public record RegisterRequest(List<String> endpoints, List<String> capabilities,
+                                   String displayName) {}
+    public record ExposeRequest(String serviceId, String protocol, String localBind,
+                                 List<String> allowedNodes) {}
+    public record RevokeRequest(String reason) {}
+}

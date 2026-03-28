@@ -1,0 +1,12 @@
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\api\MeshResource.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\gossip\GossipService.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\identity\NodeIdentity.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\ledger\consensus\RaftConsensus.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\ledger\model\Block.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\ledger\model\LedgerEntry.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\ledger\store\LedgerStore.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\proxy\EgressProxy.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\proxy\InterceptProxy.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\service\ServiceRegistry.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\tunnel\TunnelManager.java
+C:\Users\PCH\Desktop\2026\DefenderLinkII\defenderlink-mesh\src\main\java\com\defenderlink\mesh\tunnel\TunnelNegotiationResource.java
