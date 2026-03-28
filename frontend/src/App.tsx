@@ -410,7 +410,6 @@ export default function App() {
           }}>
             <span>DEFENDERLINK MESH v1.0.0</span>
             <span>NO CONTROLLER &middot; NO SPOF &middot; PEER-TO-PEER ENCRYPTED</span>
-            <span>JDK 21 &middot; QUARKUS &middot; WIREGUARD &middot; ROCKSDB</span>
           </div>
         </main>
       </div>

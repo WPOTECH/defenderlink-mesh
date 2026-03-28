@@ -195,6 +195,7 @@ public class MeshResource {
     public java.util.List<NodeWithStatus> listNodes() {
         // Ledger-registered nodes
         java.util.Map<String, LedgerStore.NodeRecord> ledgerNodes = ledger.getNodes().stream()
+                .filter(n -> n.active())
                 .collect(java.util.stream.Collectors.toMap(n -> n.nodeId(), n -> n));
 
         // Gossip-discovered peers (may include unregistered nodes)
@@ -208,11 +209,13 @@ public class MeshResource {
         java.util.List<NodeWithStatus> result = new java.util.ArrayList<>();
 
         // Add all ledger-registered nodes with online status
-        ledgerNodes.forEach((nodeId, n) -> result.add(new NodeWithStatus(
-                n.nodeId(), n.wireguardPubkey(), n.endpoints(),
-                n.capabilities(), n.displayName(), n.registeredAt(),
-                n.active(), onlinePeers.contains(nodeId), true
-        )));
+        ledgerNodes.values().stream()
+                .filter(n -> n.active())
+                .forEach(n -> result.add(new NodeWithStatus(
+                        n.nodeId(), n.wireguardPubkey(), n.endpoints(),
+                        n.capabilities(), n.displayName(), n.registeredAt(),
+                        n.active(), onlinePeers.contains(n.nodeId()), true
+                )));
 
         // Add gossip-discovered peers not yet in ledger
         gossip.getKnownPeers().stream()
