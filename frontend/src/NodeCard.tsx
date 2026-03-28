@@ -50,7 +50,7 @@ export function NodeCard({ node, onRemove, onRegister, isSelf }: Props) {
             Register
           </Btn>
         )}
-        {node.registered && !isSelf && (
+        {node.registered && (
           confirmRemove ? (
             <>
               <Btn small variant="ghost" onClick={() => setConfirmRemove(false)}>Cancel</Btn>
