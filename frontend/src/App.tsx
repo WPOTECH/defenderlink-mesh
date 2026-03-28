@@ -76,6 +76,20 @@ export default function App() {
     refresh();
   };
 
+  const handleRegisterNode = useCallback(async (nodeId: string) => {
+    try {
+      await api.registerNode({
+        displayName: nodeId === status?.nodeId ? 'This Node' : 'Node-' + nodeId.substring(0, 8),
+        endpoints: [],
+        capabilities: ['tunnel']
+      });
+      notify('Node registered to ledger');
+      refresh();
+    } catch (e: any) {
+      notify(e.message, 'error');
+    }
+  }, [status?.nodeId, notify, refresh]);
+
   const handleExpose = async (data: Parameters<typeof api.exposeService>[0]) => {
     const res = await api.exposeService(data);
     notify(`Service "${data.serviceId}" exposed on port ${res.assignedPort}`);
@@ -242,6 +256,7 @@ export default function App() {
                                                   key={n.nodeId}
                                                   node={n}
                                                   onRemove={handleRemoveNode}
+                                                  onRegister={handleRegisterNode}
                                                   isSelf={n.nodeId === status?.nodeId}
                                                 />)}
                     {nodes.length === 0 && <Empty text="No nodes registered. Register this node to join the mesh." />}
@@ -287,6 +302,7 @@ export default function App() {
                                   key={n.nodeId}
                                   node={n}
                                   onRemove={handleRemoveNode}
+                                  onRegister={handleRegisterNode}
                                   isSelf={n.nodeId === status?.nodeId}
                                 />
                               ))}

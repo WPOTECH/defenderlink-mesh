@@ -187,27 +187,54 @@ public class MeshResource {
     public record NodeWithStatus(
             String nodeId, String wireguardPubkey, java.util.List<String> endpoints,
             java.util.List<String> capabilities, String displayName,
-            java.time.Instant registeredAt, boolean active, boolean online
+            java.time.Instant registeredAt, boolean active, boolean online, boolean registered
     ) {}
 
     /** List all registered nodes */
     @GET @Path("/nodes")
     public java.util.List<NodeWithStatus> listNodes() {
-        // Build set of nodeIds seen by gossip in the last 30s
+        // Ledger-registered nodes
+        java.util.Map<String, LedgerStore.NodeRecord> ledgerNodes = ledger.getNodes().stream()
+                .collect(java.util.stream.Collectors.toMap(n -> n.nodeId(), n -> n));
+
+        // Gossip-discovered peers (may include unregistered nodes)
         java.util.Set<String> onlinePeers = gossip.getKnownPeers().stream()
                 .map(p -> p.nodeId())
                 .collect(java.util.stream.Collectors.toSet());
 
-        // Always include self as online
+        // Always include self
         onlinePeers.add(identity.getNodeId());
 
-        return ledger.getNodes().stream()
-                .map(n -> new NodeWithStatus(
-                        n.nodeId(), n.wireguardPubkey(), n.endpoints(),
-                        n.capabilities(), n.displayName(), n.registeredAt(),
-                        n.active(), onlinePeers.contains(n.nodeId())
-                ))
-                .toList();
+        java.util.List<NodeWithStatus> result = new java.util.ArrayList<>();
+
+        // Add all ledger-registered nodes with online status
+        ledgerNodes.forEach((nodeId, n) -> result.add(new NodeWithStatus(
+                n.nodeId(), n.wireguardPubkey(), n.endpoints(),
+                n.capabilities(), n.displayName(), n.registeredAt(),
+                n.active(), onlinePeers.contains(nodeId), true
+        )));
+
+        // Add gossip-discovered peers not yet in ledger
+        gossip.getKnownPeers().stream()
+                .filter(p -> !ledgerNodes.containsKey(p.nodeId()))
+                .forEach(p -> result.add(new NodeWithStatus(
+                        p.nodeId(), p.pubkey(),
+                        java.util.List.of(p.address().getHostAddress() + ":" + p.port()),
+                        java.util.List.of(), "Unknown",
+                        java.time.Instant.ofEpochMilli(p.lastSeen()),
+                        true, true, false  // active=true, online=true, registered=false
+                )));
+
+        // Add self if not already in ledger
+        if (!ledgerNodes.containsKey(identity.getNodeId())) {
+            result.add(new NodeWithStatus(
+                    identity.getNodeId(), identity.getPublicKeyBase64(),
+                    java.util.List.of(), java.util.List.of(), "This node",
+                    java.time.Instant.now(), true, true, false
+            ));
+        }
+
+        return result;
     }
 
     /** List known peers (gossip layer, may include unregistered) */
@@ -267,4 +294,6 @@ public class MeshResource {
     public record ExposeRequest(String serviceId, String protocol, String localBind,
                                  List<String> allowedNodes) {}
     public record RevokeRequest(String reason) {}
+
+
 }

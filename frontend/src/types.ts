@@ -11,6 +11,7 @@ export interface NodeRecord {
   registeredAt: string;
   active: boolean;
   online: boolean;   // live gossip status — true = seen in last 30s
+  registered: boolean;  // ← NEW
 }
 
 export interface ServicePolicy {

@@ -1,4 +1,3 @@
-cat > ~/Desktop/defenderlink-mesh/packaging/systemd/defenderlink-mesh.service << 'EOF'
 [Unit]
 Description=DefenderLink Mesh - Decentralized Zero Trust Overlay
 Documentation=https://github.com/wpotech/defenderlink-mesh
@@ -21,4 +20,3 @@ NoNewPrivileges=false
 
 [Install]
 WantedBy=multi-user.target
-EOF
