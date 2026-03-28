@@ -1,0 +1,24 @@
+cat > ~/Desktop/defenderlink-mesh/packaging/systemd/defenderlink-mesh.service << 'EOF'
+[Unit]
+Description=DefenderLink Mesh - Decentralized Zero Trust Overlay
+Documentation=https://github.com/wpotech/defenderlink-mesh
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=defenderlink
+Group=defenderlink
+EnvironmentFile=-/etc/defenderlink/defenderlink.conf
+ExecStart=/opt/defenderlink/bin/defenderlink-mesh
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=defenderlink
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target
+EOF
