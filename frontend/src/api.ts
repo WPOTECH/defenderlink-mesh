@@ -28,6 +28,15 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
   return res.json();
 }
 
+async function del<T>(path: string): Promise<T> {
+  const res = await fetch(BASE + path, { method: 'DELETE' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.status === 204 ? ({} as T) : res.json();
+}
+
 export const api = {
   // Status
   getStatus: () => get<MeshStatus>('/status'),
@@ -56,4 +65,11 @@ export const api = {
 
   // Peers
   listPeers: () => get<PeerInfo[]>('/peers'),
+
+  // Delete actions
+  removeNode:    (nodeId: string) =>
+      del<{ status: string }>(`/nodes/${nodeId}`),
+  deleteTunnel:  (serviceId: string) =>
+      del<{ status: string }>(`/tunnels/${serviceId}`),
+
 };

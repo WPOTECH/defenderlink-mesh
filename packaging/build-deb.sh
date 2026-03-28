@@ -14,12 +14,10 @@ echo " Version: ${VERSION}"
 echo " Arch:    ${ARCH}"
 echo "========================================="
 
-cd "$PROJECT_ROOT"
-
-echo ""
 echo "[1/5] Building frontend..."
 cd frontend
-chmod +x node_modules/.bin/* 2>/dev/null || true
+rm -rf node_modules package-lock.json
+npm install
 npm run build
 cd "$PROJECT_ROOT"
 

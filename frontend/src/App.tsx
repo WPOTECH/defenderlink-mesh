@@ -92,17 +92,31 @@ export default function App() {
     }
   };
 
-  const handleDisconnect = async (svcId: string) => {
-    await api.disconnect(svcId);
-    notify('Tunnel disconnected');
-    refresh();
-  };
-
   const handleRevoke = async (svcId: string) => {
     await api.revokeService(svcId, { reason: 'manual revocation' });
     notify('Service revoked from ledger');
     refresh();
   };
+
+  const handleRemoveNode = useCallback(async (nodeId: string) => {
+    try {
+      await api.removeNode(nodeId);
+      notify('Node removed');
+      refresh();
+    } catch (e: any) {
+      notify(e.message, 'error');
+    }
+  }, [notify, refresh]);
+
+  const handleDisconnect = useCallback(async (serviceId: string) => {
+    try {
+      await api.deleteTunnel(serviceId);
+      notify('Tunnel disconnected');
+      refresh();
+    } catch (e: any) {
+      notify(e.message, 'error');
+    }
+  }, [notify, refresh]);
 
   /* ═══ Derived state ═══ */
   const tunnelArr = Object.entries(tunnels);
@@ -224,7 +238,12 @@ export default function App() {
                     <Btn small variant="ghost" onClick={() => setView('nodes')}>View all</Btn>
                   </SectionHeader>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {nodes.slice(0, 4).map(n => <NodeCard key={n.nodeId} node={n} />)}
+                    {nodes.slice(0, 4).map(n => <NodeCard
+                                                  key={n.nodeId}
+                                                  node={n}
+                                                  onRemove={handleRemoveNode}
+                                                  isSelf={n.nodeId === status?.nodeId}
+                                                />)}
                     {nodes.length === 0 && <Empty text="No nodes registered. Register this node to join the mesh." />}
                   </div>
                 </div>
@@ -263,7 +282,14 @@ export default function App() {
                 <Btn small variant="primary" onClick={() => setShowRegister(true)}>+ Register</Btn>
               </SectionHeader>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(380px,1fr))', gap: 12 }}>
-                {nodes.map(n => <NodeCard key={n.nodeId} node={n} />)}
+                {nodes.map(n => (
+                                <NodeCard
+                                  key={n.nodeId}
+                                  node={n}
+                                  onRemove={handleRemoveNode}
+                                  isSelf={n.nodeId === status?.nodeId}
+                                />
+                              ))}
               </div>
               {nodes.length === 0 && <Empty text="No nodes registered in the mesh ledger." />}
             </>

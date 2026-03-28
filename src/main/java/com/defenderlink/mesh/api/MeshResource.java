@@ -184,10 +184,30 @@ public class MeshResource {
     // Ledger & Mesh Queries
     // =========================================================================
 
+    public record NodeWithStatus(
+            String nodeId, String wireguardPubkey, java.util.List<String> endpoints,
+            java.util.List<String> capabilities, String displayName,
+            java.time.Instant registeredAt, boolean active, boolean online
+    ) {}
+
     /** List all registered nodes */
     @GET @Path("/nodes")
-    public Collection<NodeRecord> listNodes() {
-        return ledger.getNodes();
+    public java.util.List<NodeWithStatus> listNodes() {
+        // Build set of nodeIds seen by gossip in the last 30s
+        java.util.Set<String> onlinePeers = gossip.getKnownPeers().stream()
+                .map(p -> p.nodeId())
+                .collect(java.util.stream.Collectors.toSet());
+
+        // Always include self as online
+        onlinePeers.add(identity.getNodeId());
+
+        return ledger.getNodes().stream()
+                .map(n -> new NodeWithStatus(
+                        n.nodeId(), n.wireguardPubkey(), n.endpoints(),
+                        n.capabilities(), n.displayName(), n.registeredAt(),
+                        n.active(), onlinePeers.contains(n.nodeId())
+                ))
+                .toList();
     }
 
     /** List known peers (gossip layer, may include unregistered) */
@@ -212,6 +232,30 @@ public class MeshResource {
                 "lastBlockHash", ledger.getLastBlock() != null
                         ? ledger.getLastBlock().hash().substring(0, 32) : "genesis"
         );
+    }
+
+// =========================================================================
+// Delete / Remove actions
+// =========================================================================
+
+    /** Force-deregister any node by ID (admin action) */
+    @DELETE @Path("/nodes/{nodeId}")
+    public Response removeNode(@PathParam("nodeId") String nodeId) {
+        LedgerEntry.NodeDeregister entry = new LedgerEntry.NodeDeregister(
+                nodeId, "admin-removed",
+                java.time.Instant.now(),
+                identity.sign((nodeId + "deregister").getBytes())
+        );
+        raft.submitEntry(entry);
+        return Response.ok(Map.of("status", "submitted", "nodeId", nodeId)).build();
+    }
+
+    /** Delete/revoke a tunnel (connector side) */
+    @DELETE @Path("/tunnels/{serviceId}")
+    public Response deleteTunnel(@PathParam("serviceId") String serviceId) {
+        interceptProxy.stopIntercept(serviceId);
+        tunnelManager.destroyTunnel(serviceId);
+        return Response.ok(Map.of("status", "disconnected", "serviceId", serviceId)).build();
     }
 
     // =========================================================================

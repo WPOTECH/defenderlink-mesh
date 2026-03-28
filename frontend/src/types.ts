@@ -7,9 +7,10 @@ export interface NodeRecord {
   wireguardPubkey: string;
   endpoints: string[];
   capabilities: string[];
-  displayName: string | null;
+  displayName: string;
   registeredAt: string;
   active: boolean;
+  online: boolean;   // live gossip status — true = seen in last 30s
 }
 
 export interface ServicePolicy {
