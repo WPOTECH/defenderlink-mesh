@@ -20,6 +20,8 @@ const VIEWS: { id: ViewId; label: string }[] = [
   { id: 'ledger', label: 'Ledger' },
 ];
 
+
+
 export default function App() {
   const [view, setView] = useState<ViewId>('overview');
   const [status, setStatus] = useState<MeshStatus | null>(null);
@@ -30,6 +32,7 @@ export default function App() {
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error'; k: number } | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showExpose, setShowExpose] = useState(false);
+  const [registeringNodeId, setRegisteringNodeId] = useState<string | null>(null);
 
   const notify = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type, k: Date.now() });
@@ -71,24 +74,21 @@ export default function App() {
 
   /* ═══ Actions ═══ */
   const handleRegister = async (data: Parameters<typeof api.registerNode>[0]) => {
-    await api.registerNode(data);
-    notify('Node registration submitted to ledger');
-    refresh();
-  };
-
-  const handleRegisterNode = useCallback(async (nodeId: string) => {
     try {
-      await api.registerNode({
-        displayName: nodeId === status?.nodeId ? 'This Node' : 'Node-' + nodeId.substring(0, 8),
-        endpoints: [],
-        capabilities: ['tunnel']
-      });
-      notify('Node registered to ledger');
+      await api.registerNode(data);
+      notify('Node registration submitted to ledger');
+      setShowRegister(false);
+      setRegisteringNodeId(null);
       refresh();
     } catch (e: any) {
       notify(e.message, 'error');
     }
-  }, [status?.nodeId, notify, refresh]);
+  };
+
+  const handleRegisterNode = useCallback((nodeId: string) => {
+    setRegisteringNodeId(nodeId);
+    setShowRegister(true);
+  }, []);
 
   const handleExpose = async (data: Parameters<typeof api.exposeService>[0]) => {
     const res = await api.exposeService(data);
@@ -416,7 +416,12 @@ export default function App() {
       </div>
 
       {/* ═══ Modals ═══ */}
-      <RegisterNodeModal isOpen={showRegister} onClose={() => setShowRegister(false)} onSubmit={handleRegister} />
+     <RegisterNodeModal
+        isOpen={showRegister}
+        onClose={() => { setShowRegister(false); setRegisteringNodeId(null); }}
+        onSubmit={handleRegister}
+        prefilledNodeId={registeringNodeId}
+      />
       <ExposeServiceModal isOpen={showExpose} onClose={() => setShowExpose(false)} onSubmit={handleExpose}
         nodes={nodes} myNodeId={myNodeId} />
 

@@ -9,9 +9,10 @@ interface RegisterProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (req: RegisterRequest) => Promise<void>;
+  prefilledNodeId?: string | null;
 }
 
-export function RegisterNodeModal({ isOpen, onClose, onSubmit }: RegisterProps) {
+export function RegisterNodeModal({ isOpen, onClose, onSubmit, prefilledNodeId }: RegisterProps) {
   const [name, setName] = useState('');
   const [endpoints, setEndpoints] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,14 @@ export function RegisterNodeModal({ isOpen, onClose, onSubmit }: RegisterProps) 
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Register this node">
+      {prefilledNodeId && (
+        <div style={{
+          fontSize: 10, color: T.textDim, marginBottom: 12,
+          padding: '6px 8px', background: T.accentBg, borderRadius: 4
+        }}>
+          Registering discovered node: {prefilledNodeId.substring(0, 16)}...
+        </div>
+      )}
       <Label>Display name</Label>
       <Input placeholder="e.g. polaris-server" value={name} onChange={e => setName(e.target.value)} />
       <div style={{ height: 14 }} />
@@ -50,7 +59,7 @@ export function RegisterNodeModal({ isOpen, onClose, onSubmit }: RegisterProps) 
       <ModalActions>
         <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
         <Btn variant="primary" onClick={submit} disabled={loading}>
-          {loading ? 'Submitting...' : '\u25C6 Register Node'}
+          {loading ? 'Submitting...' : '◆ Register Node'}
         </Btn>
       </ModalActions>
     </Modal>
