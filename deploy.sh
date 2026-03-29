@@ -13,6 +13,7 @@ echo "=== [2/5] Building ==="
 echo "=== [3/5] Installing on Polaris ==="
 sudo apt remove defenderlink-mesh -y 2>/dev/null || true
 sudo apt install -y ./$DEB
+sudo chown -R root:root /var/lib/defenderlink
 sudo systemctl start defenderlink-mesh
 
 echo "=== [4/5] Copying .deb to VM ==="
