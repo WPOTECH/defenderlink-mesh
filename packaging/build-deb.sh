@@ -113,6 +113,7 @@ if ! id -u defenderlink &>/dev/null; then
         --home-dir /var/lib/defenderlink defenderlink
 fi
 
+mkdir -p /opt/defenderlink/logs
 chown -R root:root /var/lib/defenderlink
 chown -R root:root /opt/defenderlink
 
