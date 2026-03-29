@@ -22,6 +22,7 @@ scp $DEB $VM_HOST:~/
 echo "=== [5/5] Installing on VM ==="
 ssh $VM_HOST "sudo apt remove defenderlink-mesh -y 2>/dev/null || true && \
               sudo apt install -y ~/defenderlink-mesh_1.0.0_amd64.deb && \
+              sudo chown -R root:root /var/lib/defenderlink && \
               sudo systemctl start defenderlink-mesh"
 
 echo ""
