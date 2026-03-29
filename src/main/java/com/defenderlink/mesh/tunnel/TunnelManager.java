@@ -145,6 +145,7 @@ public class TunnelManager {
         String configPath = writeConfig(ifName, localPrivKey, port,
                 negotiateResp.ownerWgPubkey(), ownerTunnelIpOnly, negotiateResp.ownerEndpoint());
 
+        try { exec("ip", "link", "delete", "dev", ifName); } catch (Exception ignored) {}
         exec("ip", "link", "add", "dev", ifName, "type", "wireguard");
         exec("ip", "addr", "add", localIp, "dev", ifName);
         exec("ip", "link", "set", "mtu", String.valueOf(mtu), "dev", ifName);
@@ -229,8 +230,9 @@ public class TunnelManager {
         // Write wg config and bring up interface
         String initiatorTunnelIpOnly = initiatorTunnelIp.split("/")[0];
         String configPath = writeConfig(ifName, privateKey, port,
-                initiatorWgPubkey, initiatorTunnelIpOnly, initiatorEndpoint);
+                initiatorWgPubkey, initiatorEndpoint, initiatorTunnelIpOnly);
 
+        try { exec("ip", "link", "delete", "dev", ifName); } catch (Exception ignored) {}
         exec("ip", "link", "add", "dev", ifName, "type", "wireguard");
         exec("ip", "addr", "add", ownerTunnelIp, "dev", ifName);
         exec("ip", "link", "set", "mtu", String.valueOf(mtu), "dev", ifName);
@@ -390,10 +392,6 @@ public class TunnelManager {
                     java.util.Base64.getEncoder().encodeToString(rawPub)
             };
         }
-    }
-
-    private String sanitize(String name) {
-        return name.replaceAll("[^a-zA-Z0-9-]", "").toLowerCase();
     }
 
     private void exec(String... cmd) throws Exception {
