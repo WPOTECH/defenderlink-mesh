@@ -156,8 +156,8 @@ public class MeshResource {
                     "status",        tunnel.state().name(),
                     "serviceId",     serviceId,
                     "connectTo",     "127.0.0.1:" + tunnel.interceptLocalPort(),
-                    "tunnelIf",      tunnel.ifName,
-                    "peerTunnelIp",  tunnel.peerTunnelIp()
+                    "tunnelIf",      tunnel.ifName != null ? tunnel.ifName : "",
+                    "peerTunnelIp",  tunnel.peerTunnelIp() != null ? tunnel.peerTunnelIp() : ""
             )).build();
         } catch (Exception e) {
             log.error("Connect failed for '{}'", serviceId, e);
