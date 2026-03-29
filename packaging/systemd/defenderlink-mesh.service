@@ -6,8 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=defenderlink
-Group=defenderlink
+user=root
 EnvironmentFile=-/etc/defenderlink/defenderlink.conf
 ExecStart=/opt/defenderlink/bin/defenderlink-mesh
 Restart=on-failure
