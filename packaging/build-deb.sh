@@ -113,8 +113,8 @@ if ! id -u defenderlink &>/dev/null; then
         --home-dir /var/lib/defenderlink defenderlink
 fi
 
-chown -R defenderlink:defenderlink /var/lib/defenderlink
-chown -R defenderlink:defenderlink /opt/defenderlink
+chown -R root:root /var/lib/defenderlink
+chown -R root:root /opt/defenderlink
 
 if getent group netdev &>/dev/null; then
     usermod -aG netdev defenderlink
