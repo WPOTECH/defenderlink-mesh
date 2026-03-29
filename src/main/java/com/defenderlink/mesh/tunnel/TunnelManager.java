@@ -361,7 +361,7 @@ public class TunnelManager {
                 "\nListenPort = " + listenPort +
                 "\n\n[Peer]\nPublicKey = " + peerPubKey +
                 "\nEndpoint = " + endpoint +
-                "\nAllowedIPs = " + allowedIp + "/32, 0.0.0.0/0" +
+                "\nAllowedIPs = " + allowedIp + "/32" +
                 "\nPersistentKeepalive = " + keepalive + "\n";
 
         try (FileWriter w = new FileWriter(path)) { w.write(config); }
