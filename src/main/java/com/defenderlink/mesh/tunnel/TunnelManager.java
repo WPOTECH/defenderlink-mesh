@@ -143,7 +143,7 @@ public class TunnelManager {
         // Bring up the connector-side WireGuard interface
         String ownerTunnelIpOnly = negotiateResp.ownerTunnelIp().split("/")[0];
         String configPath = writeConfig(ifName, localPrivKey, port,
-                negotiateResp.ownerWgPubkey(), ownerTunnelIpOnly, negotiateResp.ownerEndpoint());
+                negotiateResp.ownerWgPubkey(), negotiateResp.ownerEndpoint(), ownerTunnelIpOnly);
 
         try { exec("ip", "link", "delete", "dev", ifName); } catch (Exception ignored) {}
         exec("ip", "link", "add", "dev", ifName, "type", "wireguard");
