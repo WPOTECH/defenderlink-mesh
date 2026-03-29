@@ -115,8 +115,11 @@ public class TunnelManager {
 
         // Sign the negotiate payload
         String signable = serviceId + identity.getNodeId() + localPubKey;
+        log.info("DEBUG sign: signable='{}' nodeId='{}' wgPubkey='{}'",
+                signable, identity.getNodeId(), localPubKey);
         String sig = java.util.Base64.getEncoder()
                 .encodeToString(identity.sign(signable.getBytes()));
+        log.info("DEBUG sig='{}'", sig);
 
         // Call the owner node — it creates its interface + egress and returns its pubkey
         String ownerBaseUrl = "http://" + ownerNode.endpoints().get(0).split(":")[0] + ":8443";

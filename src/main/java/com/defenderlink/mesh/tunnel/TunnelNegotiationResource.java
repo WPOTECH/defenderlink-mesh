@@ -58,6 +58,8 @@ public class TunnelNegotiationResource {
 
         // 2. Verify Ed25519 signature using the node's identity key (nodeId is hex Ed25519 pubkey)
         String signable = req.serviceId() + req.initiatorNodeId() + req.initiatorWgPubkey();
+        log.info("DEBUG verify: signable='{}' nodeId='{}' wgPubkey='{}'",
+                signable, req.initiatorNodeId(), req.initiatorWgPubkey());
         byte[] identityPubKey = hexToBytes(initiator.nodeId());
         if (!NodeIdentity.verify(
                 signable.getBytes(),
