@@ -147,13 +147,19 @@ export function Toast({ message, type = 'success', onDismiss }: {
 }) {
   useEffect(() => { const t = setTimeout(onDismiss, 60000); return () => clearTimeout(t); }, [onDismiss]);
   const color = type === 'error' ? T.danger : T.accent;
-  return <div style={{
-    position: 'fixed', bottom: 20, right: 20, padding: '10px 18px', borderRadius: 4,
-    fontSize: 11, fontFamily: T.font, fontWeight: 500, zIndex: 2000,
-    animation: 'fadeIn .2s ease',
-    background: type === 'error' ? T.dangerBg : T.accentBg,
-    border: `1px solid ${color}30`, color,
-  }}>{message}</div>;
+  return (
+    <div style={{
+      position: 'fixed', bottom: 20, right: 20, padding: '10px 18px', borderRadius: 4,
+      fontSize: 11, fontFamily: T.font, fontWeight: 500, zIndex: 2000,
+      animation: 'fadeIn .2s ease',
+      background: type === 'error' ? T.dangerBg : T.accentBg,
+      border: `1px solid ${color}30`, color,
+      display: 'flex', alignItems: 'center', gap: 10,
+    }}>
+      <span>{message}</span>
+      <span onClick={onDismiss} style={{ cursor: 'pointer', opacity: 0.6, fontSize: 14 }}>✕</span>
+    </div>
+  );
 }
 
 /* ═══ Modal ═══ */
