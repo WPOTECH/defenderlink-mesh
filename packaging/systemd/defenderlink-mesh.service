@@ -6,8 +6,6 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=defenderlink
-Group=defenderlink
 EnvironmentFile=-/etc/defenderlink/defenderlink.conf
 ExecStart=/opt/defenderlink/bin/defenderlink-mesh
 Restart=on-failure
@@ -16,8 +14,6 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=defenderlink
 NoNewPrivileges=false
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
 
 [Install]
 WantedBy=multi-user.target
