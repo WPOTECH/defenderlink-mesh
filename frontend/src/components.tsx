@@ -145,7 +145,7 @@ export function Empty({ text }: { text: string }) {
 export function Toast({ message, type = 'success', onDismiss }: {
   message: string; type?: 'success' | 'error'; onDismiss: () => void;
 }) {
-  useEffect(() => { const t = setTimeout(onDismiss, 30000); return () => clearTimeout(t); }, [onDismiss]);
+  useEffect(() => { const t = setTimeout(onDismiss, 60000); return () => clearTimeout(t); }, [onDismiss]);
   const color = type === 'error' ? T.danger : T.accent;
   return <div style={{
     position: 'fixed', bottom: 20, right: 20, padding: '10px 18px', borderRadius: 4,
