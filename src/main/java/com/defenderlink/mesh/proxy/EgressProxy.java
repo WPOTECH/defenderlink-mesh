@@ -53,19 +53,26 @@ public class EgressProxy {
     void syncEgressBindings() {
         var myServices = ledger.getServicesByOwner(identity.getNodeId());
 
+        // Start legacy 0.0.0.0 egress for services not yet tunnel-connected
         for (ServiceRecord svc : myServices) {
             if (!svc.active()) continue;
             if (bindings.containsKey(svc.serviceId())) continue;
-
             startEgress(svc);
         }
 
-        // Stop egress for revoked services
-        bindings.forEach((id, binding) -> {
-            var svc = ledger.getService(id);
+        // Only stop egress for plain serviceId keys (not tunnel-specific keys)
+        bindings.entrySet().removeIf(entry -> {
+            String key = entry.getKey();
+            // Skip tunnel-specific bindings (they contain ':' + IP)
+            if (key.contains(":")) return false;
+            var svc = ledger.getService(key);
             if (svc.isEmpty() || !svc.get().active()) {
-                stopEgress(id);
+                entry.getValue().active = false;
+                try { entry.getValue().serverSocket.close(); } catch (Exception ignored) {}
+                log.info("Stopped egress for '{}'", key);
+                return true;
             }
+            return false;
         });
     }
 
