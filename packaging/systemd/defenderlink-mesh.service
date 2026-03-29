@@ -15,8 +15,9 @@ RestartSec=5s
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=defenderlink
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
 NoNewPrivileges=false
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
 
 [Install]
 WantedBy=multi-user.target
