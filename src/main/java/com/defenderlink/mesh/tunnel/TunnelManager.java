@@ -394,7 +394,12 @@ public class TunnelManager {
     }
 
     private void exec(String... cmd) throws Exception {
-        Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+        // Prepend sudo to handle capability inheritance issues with subprocess spawning
+        String[] sudoCmd = new String[cmd.length + 1];
+        sudoCmd[0] = "sudo";
+        System.arraycopy(cmd, 0, sudoCmd, 1, cmd.length);
+
+        Process p = new ProcessBuilder(sudoCmd).redirectErrorStream(true).start();
         String out = new String(p.getInputStream().readAllBytes());
         if (p.waitFor() != 0) throw new RuntimeException(String.join(" ", cmd) + ": " + out);
     }
