@@ -6,6 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=root
 EnvironmentFile=-/etc/defenderlink/defenderlink.conf
 ExecStart=/opt/defenderlink/bin/defenderlink-mesh
 Restart=on-failure
@@ -13,7 +14,6 @@ RestartSec=5s
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=defenderlink
-NoNewPrivileges=false
 
 [Install]
 WantedBy=multi-user.target
