@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { T } from './theme';
 import { Card, Badge, Indicator, Btn, InfoRow } from './components';
 import type { ActiveTunnel } from './types';
-import { ago } from './utils';
+import { short } from './utils';
 
 interface Props {
   id: string;
@@ -22,7 +22,7 @@ export function TunnelCard({ id, tunnel, onDisconnect }: Props) {
             {tunnel.serviceId}
           </div>
           <div style={{ fontSize: 10, color: T.textDim, fontFamily: T.font }}>
-            iface: {tunnel.interfaceName}
+            {tunnel.ifName} · {tunnel.role}
           </div>
         </div>
         <Badge color={stColor}>
@@ -33,11 +33,11 @@ export function TunnelCard({ id, tunnel, onDisconnect }: Props) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
         <InfoRow label="Local IP" value={tunnel.localIp} />
-        <InfoRow label="Remote IP" value={tunnel.remoteIp} />
-        <InfoRow label="Endpoint" value={tunnel.remoteEndpoint} />
-        <InfoRow label="Protocol" value={tunnel.protocol?.toUpperCase()} />
+        <InfoRow label="Peer IP" value={tunnel.peerTunnelIp || '—'} />
         <InfoRow label="Listen port" value={tunnel.listenPort} />
-        <InfoRow label="Created" value={ago(tunnel.createdAt)} />
+        <InfoRow label="Egress port" value={tunnel.egressPort} />
+        <InfoRow label="Connect to" value={tunnel.interceptLocalPort ? `127.0.0.1:${tunnel.interceptLocalPort}` : '—'} />
+        <InfoRow label="Peer node" value={short(tunnel.peerNodeId)} />
       </div>
 
       {tunnel.error && (

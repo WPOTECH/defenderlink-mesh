@@ -35,17 +35,18 @@ export interface ServiceRecord {
 
 export interface ActiveTunnel {
   serviceId: string;
-  interfaceName: string;
+  ifName: string;
   localIp: string;
-  remoteIp: string;
+  localPublicKey: string;
   listenPort: number;
-  localPubKey: string | null;
-  remotePubKey: string;
-  remoteEndpoint: string;
-  protocol: string;
-  state: 'ACTIVE' | 'PAUSED' | 'FAILED';
-  createdAt: string;
+  peerNodeId: string;
+  role: string;
+  egressPort: number;
+  peerTunnelIp: string;
+  interceptLocalPort: number;
+  state: string;
   error: string | null;
+  up: boolean;
 }
 
 export interface MeshStatus {
