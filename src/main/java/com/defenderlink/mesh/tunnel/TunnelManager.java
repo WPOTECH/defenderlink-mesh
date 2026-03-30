@@ -424,6 +424,7 @@ public class TunnelManager {
             int    egressPort
     ) {}
 
+    @com.fasterxml.jackson.annotation.JsonAutoDetect(fieldVisibility = com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY)
     public static class ActiveTunnel {
         public final String     serviceId;
         public final String     ifName;
