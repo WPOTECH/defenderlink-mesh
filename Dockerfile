@@ -20,7 +20,7 @@
 #   - WireGuard kernel module: sudo modprobe wireguard
 #   - CAP_NET_ADMIN capability (granted via --cap-add)
 # =============================================================================
-FROM eclipse-temurin:24-jre-jammy
+FROM eclipse-temurin:24-jre-noble
 
 LABEL org.opencontainers.image.title="DefenderLink Mesh" \
       org.opencontainers.image.description="Decentralized Zero Trust Overlay Network" \
