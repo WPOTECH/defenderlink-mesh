@@ -49,9 +49,9 @@ RUN mkdir -p /var/lib/defenderlink/identity \
 COPY target/defenderlink-mesh-*-runner.jar /opt/defenderlink/defenderlink-mesh.jar
 
 # Ports
-EXPOSE 8443/tcp    # Dashboard + REST API
-EXPOSE 9450/udp    # Gossip (peer discovery)
-EXPOSE 51820/udp   # WireGuard tunnel
+EXPOSE 8443/tcp
+EXPOSE 9450/udp
+EXPOSE 51820/udp
 
 # Persist ledger, identity keys, WireGuard configs across container restarts
 VOLUME ["/var/lib/defenderlink"]
