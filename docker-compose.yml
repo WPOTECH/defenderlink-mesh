@@ -1,0 +1,82 @@
+# =============================================================================
+# DefenderLink Mesh — Docker Compose
+#
+# For local two-node testing on the same machine.
+#
+# Prerequisites:
+#   sudo modprobe wireguard
+#   docker build -t wpotech/defenderlink-mesh:1.0.0 .
+#
+# Usage:
+#   POLARIS_IP=192.168.5.104 VM_IP=192.168.4.94 docker compose up -d
+#
+# Dashboards:
+#   Polaris: http://localhost:8443
+#   VM:      http://localhost:8444
+# =============================================================================
+services:
+
+  defenderlink-polaris:
+    image: wpotech/defenderlink-mesh:latest
+    container_name: defenderlink-polaris
+    hostname: polaris
+    restart: unless-stopped
+    # host networking required — WireGuard creates kernel interfaces
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    sysctls:
+      - net.ipv4.ip_forward=1
+    volumes:
+      - polaris-data:/var/lib/defenderlink
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=${POLARIS_IP:-192.168.5.104}:51820
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8443/q/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  defenderlink-vm:
+    image: wpotech/defenderlink-mesh:latest
+    container_name: defenderlink-vm
+    hostname: vm
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    sysctls:
+      - net.ipv4.ip_forward=1
+    volumes:
+      - vm-data:/var/lib/defenderlink
+    environment:
+      # Different ports to avoid conflict when both run on same host
+      - JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=${VM_IP:-192.168.4.94}:51821
+                          -Dquarkus.http.port=8444
+                          -Dmesh.gossip.port=9451
+                          -Dmesh.tunnel.listen-port-start=51821
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8444/q/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  polaris-data:
+    driver: local
+  vm-data:
+    driver: local

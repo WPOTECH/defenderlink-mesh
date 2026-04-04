@@ -1,0 +1,15 @@
+# =============================================================================
+# Overlay: Polaris node (192.168.5.104)
+#
+# Customizes the base DaemonSet for the Polaris K3s node.
+# Sets the public WireGuard endpoint and Multus macvlan IP.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: defenderlink-config
+  namespace: defenderlink
+data:
+  java-opts: >-
+    -Dmesh.node.public-endpoint=192.168.5.104:51820
+    -Xmx512m

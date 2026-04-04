@@ -1,0 +1,12 @@
+# =============================================================================
+# Overlay: VM node (192.168.4.94)
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: defenderlink-config
+  namespace: defenderlink
+data:
+  java-opts: >-
+    -Dmesh.node.public-endpoint=192.168.4.94:51820
+    -Xmx512m

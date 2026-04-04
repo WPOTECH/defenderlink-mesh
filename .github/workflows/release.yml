@@ -1,0 +1,96 @@
+# =============================================================================
+# DefenderLink Mesh — Build .deb and create GitHub Release
+#
+# Triggers on version tags: git tag v1.0.0 && git push origin v1.0.0
+# =============================================================================
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 24
+        uses: actions/setup-java@v4
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          cd ..
+          mkdir -p src/main/resources/META-INF/resources
+          cp -r frontend/dist/* src/main/resources/META-INF/resources/
+
+      - name: Build .deb package
+        run: |
+          chmod +x packaging/build-deb.sh
+          ./packaging/build-deb.sh
+          ls -lh build/*.deb
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd build
+          sha256sum *.deb > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "DefenderLink Mesh v${{ steps.version.outputs.version }}"
+          body: |
+            ## DefenderLink Mesh v${{ steps.version.outputs.version }}
+
+            ### Install
+
+            **One-liner (recommended):**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/flyingwest/defenderlink-mesh/main/install.sh | sudo bash
+            ```
+
+            **Manual .deb:**
+            ```bash
+            wget https://github.com/flyingwest/defenderlink-mesh/releases/download/${{ github.ref_name }}/defenderlink-mesh_${{ steps.version.outputs.version }}_amd64.deb
+            sudo apt install -y ./defenderlink-mesh_${{ steps.version.outputs.version }}_amd64.deb
+            ```
+
+            **Docker:**
+            ```bash
+            docker pull wpotech/defenderlink-mesh:${{ steps.version.outputs.version }}
+            ```
+
+            See [INSTALL.md](https://github.com/flyingwest/defenderlink-mesh/blob/main/INSTALL.md) for full installation guide.
+          files: |
+            build/*.deb
+            build/SHA256SUMS
+          draft: false
+          prerelease: false

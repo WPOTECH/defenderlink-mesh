@@ -1,0 +1,26 @@
+# =============================================================================
+# Netplan configuration for DefenderLink Mesh nodes
+# Place at: /etc/netplan/60-defenderlink.yaml
+#
+# This allows macvlan traffic from the Multus interface and adds
+# static routes for the WireGuard tunnel subnet (10.200.0.0/16).
+#
+# Apply with: sudo netplan apply
+# =============================================================================
+network:
+  version: 2
+  ethernets:
+    # Replace 'eth0' with your actual interface name
+    # Check with: ip link show | grep -v lo
+    eth0:
+      dhcp4: true
+      dhcp6: false
+      accept-ra: false
+
+  routes:
+    # Route WireGuard tunnel subnet through the local interface
+    # This ensures tunnel IPs (10.200.x.x) are reachable on-link
+    - to: 10.200.0.0/16
+      via: 0.0.0.0
+      on-link: true
+      metric: 100

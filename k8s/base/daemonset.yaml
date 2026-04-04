@@ -1,0 +1,136 @@
+# =============================================================================
+# DefenderLink Mesh — Base DaemonSet
+#
+# Deploys one DefenderLink pod per K3s node.
+# Uses Multus macvlan for WireGuard — no hostNetwork needed.
+#
+# Customize per-node via overlays/ (see overlays/polaris and overlays/vm).
+# =============================================================================
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: defenderlink-mesh
+  namespace: defenderlink
+  labels:
+    app.kubernetes.io/name: defenderlink-mesh
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: wpotech
+spec:
+  selector:
+    matchLabels:
+      app: defenderlink-mesh
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: defenderlink-mesh
+      annotations:
+        # Multus — attach WireGuard macvlan interface as 'wg-ext'
+        # IP is set per-node in the overlay
+        k8s.v1.cni.cncf.io/networks: defenderlink-wireguard
+    spec:
+      # ── Init: load WireGuard kernel module on the node ──────────────────
+      initContainers:
+        - name: wireguard-module-loader
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - |
+              if lsmod | grep -q wireguard; then
+                echo "WireGuard module already loaded"
+              else
+                modprobe wireguard && echo "WireGuard module loaded"
+              fi
+          securityContext:
+            privileged: true      # Only this init container is privileged
+          volumeMounts:
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+
+      # ── Main container ───────────────────────────────────────────────────
+      containers:
+        - name: defenderlink-mesh
+          image: wpotech/defenderlink-mesh:1.0.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            capabilities:
+              add:
+                - NET_ADMIN   # Required: ip link, wg setconf
+                - NET_RAW     # Required: raw socket operations
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+
+          env:
+            - name: MESH_DATA_DIR
+              value: /var/lib/defenderlink
+            # NODE_IP is injected from the Downward API
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            # Override per node via overlay ConfigMap
+            - name: JAVA_TOOL_OPTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: defenderlink-config
+                  key: java-opts
+
+          ports:
+            - name: dashboard
+              containerPort: 8443
+              protocol: TCP
+            - name: gossip
+              containerPort: 9450
+              protocol: UDP
+            - name: wireguard
+              containerPort: 51820
+              protocol: UDP
+
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/defenderlink
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "768Mi"
+              cpu: "1500m"
+
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8443
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8443
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: defenderlink-data
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

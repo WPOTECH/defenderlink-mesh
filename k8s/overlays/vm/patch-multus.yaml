@@ -1,0 +1,17 @@
+# Patch: set Multus macvlan IP for VM node
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: defenderlink-mesh
+  namespace: defenderlink
+spec:
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |
+          [{
+            "name": "defenderlink-wireguard",
+            "namespace": "defenderlink",
+            "interface": "wg-ext",
+            "ips": ["192.168.4.94/24"]
+          }]

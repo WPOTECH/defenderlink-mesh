@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: defenderlink
+  labels:
+    app.kubernetes.io/name: defenderlink-mesh
+    app.kubernetes.io/managed-by: wpotech

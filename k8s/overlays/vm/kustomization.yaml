@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - configmap.yaml
+
+patches:
+  - path: patch-multus.yaml
+    target:
+      kind: DaemonSet
+      name: defenderlink-mesh
+  - patch: |
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: defenderlink-mesh
+        namespace: defenderlink
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              kubernetes.io/hostname: wpotech-virtualbox

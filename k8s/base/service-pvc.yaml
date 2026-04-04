@@ -1,0 +1,48 @@
+# =============================================================================
+# DefenderLink Mesh — Storage
+# Uses K3s default local-path provisioner
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: defenderlink-data
+  namespace: defenderlink
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path   # K3s default — change for other clusters
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# =============================================================================
+# DefenderLink Mesh — Service
+# NodePort exposes dashboard and WireGuard UDP externally
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: defenderlink-mesh
+  namespace: defenderlink
+  labels:
+    app: defenderlink-mesh
+spec:
+  type: NodePort
+  selector:
+    app: defenderlink-mesh
+  ports:
+    - name: dashboard
+      port: 8443
+      targetPort: 8443
+      nodePort: 30443
+      protocol: TCP
+    - name: gossip
+      port: 9450
+      targetPort: 9450
+      protocol: UDP
+    - name: wireguard
+      port: 51820
+      targetPort: 51820
+      nodePort: 31820
+      protocol: UDP
