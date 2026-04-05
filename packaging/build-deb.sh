@@ -135,6 +135,12 @@ echo " Dashboard: http://localhost:8443"
 echo " Logs:      journalctl -u defenderlink-mesh -f"
 echo "============================================"
 POSTINST
+# License key — leave empty for free tier (max 3 nodes)
+# Get a license at https://defenderlink.io/pricing
+# Pro: dl_pro_xxxxxxxxxxxxxxxx  (25 nodes)
+# Enterprise: dl_ent_xxxxxxxxxxxxxxxx  (unlimited)
+MESH_LICENSE_KEY=
+
 chmod 755 "${PKG_DIR}/DEBIAN/postinst"
 
 cat > "${PKG_DIR}/DEBIAN/prerm" << 'PRERM'

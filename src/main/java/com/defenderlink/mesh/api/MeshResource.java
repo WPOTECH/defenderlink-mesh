@@ -7,6 +7,7 @@ import com.defenderlink.mesh.ledger.model.LedgerEntry;
 import com.defenderlink.mesh.ledger.model.LedgerEntry.*;
 import com.defenderlink.mesh.ledger.store.LedgerStore;
 import com.defenderlink.mesh.ledger.store.LedgerStore.*;
+import com.defenderlink.mesh.ledger.store.LicenseLimitException;
 import com.defenderlink.mesh.proxy.InterceptProxy;
 import com.defenderlink.mesh.service.ServiceRegistry;
 import com.defenderlink.mesh.tunnel.TunnelManager;
@@ -73,6 +74,7 @@ public class MeshResource {
     /** Register this node in the mesh ledger */
     @POST @Path("/node/register")
     public Response registerNode(RegisterRequest req) {
+        try {
         NodeRegister entry = new NodeRegister(
                 identity.getNodeId(),
                 identity.getPublicKeyBase64(), // WireGuard key derived from same curve
@@ -84,6 +86,12 @@ public class MeshResource {
         );
         raft.submitEntry(entry);
         return Response.accepted(Map.of("status", "submitted", "nodeId", identity.shortId())).build();
+
+        } catch (LicenseLimitException e) {
+            return Response.status(Response.Status.PAYMENT_REQUIRED)
+                    .entity(Map.of("error", e.getMessage()))
+                    .build();
+        }
     }
 
     /** Deregister this node from the mesh */

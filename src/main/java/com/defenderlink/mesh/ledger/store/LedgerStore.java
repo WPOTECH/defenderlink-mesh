@@ -45,6 +45,15 @@ public class LedgerStore {
     @ConfigProperty(name = "mesh.ledger.data-dir")
     String ledgerDataDir;
 
+    @ConfigProperty(name = "mesh.license.key", defaultValue = "")
+    String licenseKey;
+
+    @ConfigProperty(name = "mesh.node.max-free", defaultValue = "3")
+    int maxFreeNodes;
+
+    @ConfigProperty(name = "mesh.node.max-pro", defaultValue = "25")
+    int maxProNodes;
+
     @Inject
     NodeIdentity identity;
 
@@ -228,6 +237,29 @@ public class LedgerStore {
                 .toList();
     }
 
+    private void validateNodeLimit() {
+        boolean isFree       = licenseKey == null || licenseKey.isBlank();
+        boolean isPro        = !isFree && licenseKey.startsWith("dl_pro_");
+        boolean isEnterprise = !isFree && licenseKey.startsWith("dl_ent_");
+
+        if (isEnterprise) return; // unlimited
+
+        long activeNodes = nodes.values().stream().filter(NodeRecord::active).count();
+
+        if (isFree && activeNodes >= maxFreeNodes) {
+            throw new LicenseLimitException(
+                    "Free tier is limited to " + maxFreeNodes + " nodes. " +
+                            "Upgrade at https://defenderlink.io/pricing"
+            );
+        }
+        if (isPro && activeNodes >= maxProNodes) {
+            throw new LicenseLimitException(
+                    "Pro tier is limited to " + maxProNodes + " nodes. " +
+                            "Contact sales@wpotech.com for Enterprise."
+            );
+        }
+    }
+
     // =========================================================================
     // State Materialization
     // =========================================================================
@@ -235,9 +267,15 @@ public class LedgerStore {
     private void applyBlock(Block block) {
         for (LedgerEntry entry : block.entries()) {
             switch (entry) {
-                case NodeRegister nr -> nodes.put(nr.authorNodeId(), new NodeRecord(
-                        nr.authorNodeId(), nr.wireguardPubkey(), nr.endpoints(),
-                        nr.capabilities(), nr.displayName(), nr.timestamp(), true));
+                case NodeRegister nr -> {
+                    // Only check limit for genuinely new nodes
+                    if (!nodes.containsKey(nr.authorNodeId())) {
+                        validateNodeLimit();
+                    }
+                    nodes.put(nr.authorNodeId(), new NodeRecord(
+                            nr.authorNodeId(), nr.wireguardPubkey(), nr.endpoints(),
+                            nr.capabilities(), nr.displayName(), nr.timestamp(), true));
+                }
 
                 case NodeDeregister nd -> nodes.computeIfPresent(nd.authorNodeId(),
                         (k, v) -> v.withActive(false));
