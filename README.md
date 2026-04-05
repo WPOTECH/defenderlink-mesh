@@ -16,7 +16,7 @@ DefenderLink Mesh is an open-source, fully decentralized Zero Trust Access overl
 ## How It Works
 
 ```
-Node A (Polaris)                          Node B (VM)
+    Node A                                   Node B
 ────────────────                          ────────────
 App → 127.0.0.1:14000                    Keycloak → 127.0.0.1:8080
        ↓                                        ↑
