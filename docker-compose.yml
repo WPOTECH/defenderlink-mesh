@@ -5,7 +5,7 @@
 #
 # Prerequisites:
 #   sudo modprobe wireguard
-#   docker build -t wpotech/defenderlink-mesh:1.0.0 .
+#   docker build -t wpospace/defenderlink-mesh:1.0.0 .
 #
 # Usage:
 #   POLARIS_IP=192.168.5.104 VM_IP=192.168.4.94 docker compose up -d
@@ -17,7 +17,7 @@
 services:
 
   defenderlink-polaris:
-    image: wpotech/defenderlink-mesh:latest
+    image: wpospace/defenderlink-mesh:latest
     container_name: defenderlink-polaris
     hostname: polaris
     restart: unless-stopped
@@ -45,7 +45,7 @@ services:
         max-file: "3"
 
   defenderlink-vm:
-    image: wpotech/defenderlink-mesh:latest
+    image: wpospace/defenderlink-mesh:latest
     container_name: defenderlink-vm
     hostname: vm
     restart: unless-stopped

@@ -55,7 +55,7 @@ spec:
       # ── Main container ───────────────────────────────────────────────────
       containers:
         - name: defenderlink-mesh
-          image: wpotech/defenderlink-mesh:1.0.0
+          image: wpospace/defenderlink-mesh:1.0.0
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 0

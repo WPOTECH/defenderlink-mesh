@@ -85,7 +85,7 @@ jobs:
 
             **Docker:**
             ```bash
-            docker pull wpotech/defenderlink-mesh:${{ steps.version.outputs.version }}
+            docker pull wpospace/defenderlink-mesh:${{ steps.version.outputs.version }}
             ```
 
             See [INSTALL.md](https://github.com/flyingwest/defenderlink-mesh/blob/main/INSTALL.md) for full installation guide.

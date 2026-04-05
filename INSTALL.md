@@ -117,7 +117,7 @@ docker run -d \
   --restart unless-stopped \
   -v defenderlink-data:/var/lib/defenderlink \
   -e "JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=192.168.5.104:51820" \
-  wpotech/defenderlink-mesh:latest
+  wpospace/defenderlink-mesh:latest
 ```
 
 ```bash
@@ -172,10 +172,10 @@ docker compose down
 mvn clean package -DskipTests -Dquarkus.package.jar.type=uber-jar
 
 # Build the Docker image
-docker build -t wpotech/defenderlink-mesh:1.0.0 .
+docker build -t wpospace/defenderlink-mesh:1.0.0 .
 
 # Push to DockerHub (replace with your account)
-docker push wpotech/defenderlink-mesh:1.0.0
+docker push wpospace/defenderlink-mesh:1.0.0
 ```
 
 ---

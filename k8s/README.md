@@ -71,11 +71,11 @@ sudo netplan apply
 mvn clean package -DskipTests -Dquarkus.package.jar.type=uber-jar
 
 # Build and push image
-docker build -t wpotech/defenderlink-mesh:1.0.0 -f k8s/Dockerfile .
-docker push wpotech/defenderlink-mesh:1.0.0
+docker build -t wpospace/defenderlink-mesh:1.0.0 -f k8s/Dockerfile .
+docker push wpospace/defenderlink-mesh:1.0.0
 
 # Or load locally for K3s
-docker save wpotech/defenderlink-mesh:1.0.0 | sudo k3s ctr images import -
+docker save wpospace/defenderlink-mesh:1.0.0 | sudo k3s ctr images import -
 ```
 
 ---
@@ -142,7 +142,7 @@ Test two nodes on the same machine:
 sudo modprobe wireguard
 
 # Build image
-docker build -t wpotech/defenderlink-mesh:1.0.0 -f k8s/Dockerfile .
+docker build -t wpospace/defenderlink-mesh:1.0.0 -f k8s/Dockerfile .
 
 # Start both nodes
 POLARIS_IP=192.168.5.104 VM_IP=192.168.4.94 docker compose -f k8s/docker-compose.yml up -d

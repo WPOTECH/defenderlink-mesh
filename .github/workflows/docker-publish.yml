@@ -24,7 +24,7 @@ on:
         default: 'latest'
 
 env:
-  IMAGE_NAME: wpotech/defenderlink-mesh
+  IMAGE_NAME: wpospace/defenderlink-mesh
 
 jobs:
   build-and-push:

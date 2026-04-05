@@ -3,7 +3,7 @@
 #
 # Build:
 #   mvn clean package -DskipTests -Dquarkus.package.jar.type=uber-jar
-#   docker build -t wpotech/defenderlink-mesh:1.0.0 .
+#   docker build -t wpospace/defenderlink-mesh:1.0.0 .
 #
 # Run:
 #   docker run -d \
@@ -14,7 +14,7 @@
 #     --sysctl net.ipv4.ip_forward=1 \
 #     -v defenderlink-data:/var/lib/defenderlink \
 #     -e "JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=YOUR_IP:51820" \
-#     wpotech/defenderlink-mesh:1.0.0
+#     wpospace/defenderlink-mesh:1.0.0
 #
 # Host requirements:
 #   - WireGuard kernel module: sudo modprobe wireguard
