@@ -242,18 +242,6 @@ JAVA_OPTS=-Dmesh.node.public-endpoint=192.168.1.100:51820
 
 ---
 
-## Part of the WPO Tech Ecosystem
-
-DefenderLink Mesh is the network security layer for the **5GMedLink** platform — private 5G networking for healthcare with zero-trust access control.
-
-| Product | Description |
-|---|---|
-| **5GMedLink** | Private 5G core for healthcare (srsRAN + free5GC) |
-| **DefenderLink AI Firewall & Router** | AI agent-powered edge firewall & router |
-| **DefenderLink Mesh** | Zero trust overlay network (this repo) |
-
----
-
 ## Contributing
 
 DefenderLink Mesh is open source and welcomes contributions.
