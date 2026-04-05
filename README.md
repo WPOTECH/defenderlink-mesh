@@ -6,12 +6,15 @@
 [![Java](https://img.shields.io/badge/Java-24-orange.svg)](https://openjdk.org/)
 [![Quarkus](https://img.shields.io/badge/Quarkus-3.x-blue.svg)](https://quarkus.io/)
 [![WireGuard](https://img.shields.io/badge/WireGuard-✓-88171A.svg)](https://www.wireguard.com/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/wpospace/defenderlink-mesh)](https://hub.docker.com/r/wpospace/defenderlink-mesh)
+[![Docker Image](https://img.shields.io/docker/v/wpospace/defenderlink-mesh?label=docker)](https://hub.docker.com/r/wpospace/defenderlink-mesh)
 
 DefenderLink Mesh is an open-source, fully decentralized Zero Trust Access overlay network. No controller. No single point of failure. No cloud dependency. Every node is sovereign.
 
 ---
 
 ## How It Works
+
 ```
 Node A (Polaris)                          Node B (VM)
 ────────────────                          ────────────
@@ -73,6 +76,8 @@ When Node A wants to reach a service on Node B:
 | React dashboard UI | ✅ |
 | REST API | ✅ |
 | .deb package with systemd service | ✅ |
+| Docker / Docker Compose | ✅ |
+| K3s + Multus (Kubernetes) | ✅ |
 | Multi-node mesh | ✅ |
 | Service access revocation | ✅ |
 
@@ -89,33 +94,48 @@ When Node A wants to reach a service on Node B:
 
 ## Installation
 
-### From .deb package (recommended)
+See **[INSTALL.md](INSTALL.md)** for the full installation guide covering all methods.
+
+### One-liner (recommended)
+
 ```bash
-# Install WireGuard
-sudo apt install wireguard-tools -y
-
-# Install Java 24
-sudo apt install openjdk-24-jre-headless -y
-# or manually extract OpenJDK 24 tarball
-
-# Download the latest .deb from releases
-wget https://github.com/flyingwest/defenderlink-mesh/releases/latest/download/defenderlink-mesh_1.0.0_amd64.deb
-
-# Install
-sudo apt install -y ./defenderlink-mesh_1.0.0_amd64.deb
-
-# Configure your public endpoint
-sudo nano /etc/defenderlink/defenderlink.conf
-# Add: JAVA_OPTS=-Dmesh.node.public-endpoint=YOUR_IP:51820
-
-# Start
-sudo systemctl enable --now defenderlink-mesh
-
-# Open dashboard
-http://YOUR_IP:8443
+curl -fsSL https://raw.githubusercontent.com/flyingwest/defenderlink-mesh/main/install.sh | sudo bash
 ```
 
+### Docker
+
+```bash
+docker pull wpospace/defenderlink-mesh:latest
+
+docker run -d \
+  --name defenderlink-mesh \
+  --network host \
+  --cap-add NET_ADMIN \
+  --cap-add NET_RAW \
+  --sysctl net.ipv4.ip_forward=1 \
+  --restart unless-stopped \
+  -v defenderlink-data:/var/lib/defenderlink \
+  -e "JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=YOUR_IP:51820" \
+  wpospace/defenderlink-mesh:latest
+```
+
+### Manual .deb
+
+```bash
+wget https://github.com/flyingwest/defenderlink-mesh/releases/latest/download/defenderlink-mesh_1.0.0_amd64.deb
+sudo apt install -y ./defenderlink-mesh_1.0.0_amd64.deb
+```
+
+### Kubernetes (K3s + Multus)
+
+```bash
+kubectl apply -k k8s/overlays/polaris
+```
+
+See [k8s/README.md](k8s/README.md) for full Kubernetes deployment guide.
+
 ### From source
+
 ```bash
 git clone https://github.com/flyingwest/defenderlink-mesh.git
 cd defenderlink-mesh
@@ -165,6 +185,7 @@ That's it. No VPN configuration. No certificates. No firewall rules beyond UDP 9
 ## Configuration
 
 `/etc/defenderlink/defenderlink.conf`
+
 ```bash
 # HTTP port
 QUARKUS_HTTP_PORT=8443
@@ -228,15 +249,15 @@ DefenderLink Mesh is the network security layer for the **5GMedLink** platform �
 | Product | Description |
 |---|---|
 | **5GMedLink** | Private 5G core for healthcare (srsRAN + free5GC) |
-| **DefenderLink AI Firewall & Router** | AI agent-Powered Edge Firewall & Router |
+| **DefenderLink AI Firewall & Router** | AI agent-powered edge firewall & router |
 | **DefenderLink Mesh** | Zero trust overlay network (this repo) |
-
 
 ---
 
 ## Contributing
 
-DefenderLink Mesh is open source and welcomes contributions. See [CONTRIBUTING.md](CONTRIBUTING.md).
+DefenderLink Mesh is open source and welcomes contributions.
+
 ```bash
 # Run in dev mode (no WireGuard required for control plane testing)
 mvn quarkus:dev
