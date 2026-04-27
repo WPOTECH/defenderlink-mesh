@@ -1,7 +1,7 @@
 # DefenderLink Mesh
 
 **Decentralized Zero Trust Access (ZTA) Overlay Network**
-https://defenderlinkmesh.com/
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-24-orange.svg)](https://openjdk.org/)
 [![Quarkus](https://img.shields.io/badge/Quarkus-3.x-blue.svg)](https://quarkus.io/)
@@ -10,6 +10,8 @@ https://defenderlinkmesh.com/
 [![Docker Image](https://img.shields.io/docker/v/wpospace/defenderlink-mesh?label=docker)](https://hub.docker.com/r/wpospace/defenderlink-mesh)
 
 DefenderLink Mesh is an open-source, fully decentralized Zero Trust Access overlay network. No controller. No single point of failure. No cloud dependency. Every node is sovereign.
+
+https://defenderlinkmesh.com/
 
 ---
 
