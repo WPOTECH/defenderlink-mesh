@@ -113,7 +113,6 @@ docker run -d \
   --network host \
   --cap-add NET_ADMIN \
   --cap-add NET_RAW \
-  --sysctl net.ipv4.ip_forward=1 \
   --restart unless-stopped \
   -v defenderlink-data:/var/lib/defenderlink \
   -e "JAVA_TOOL_OPTIONS=-Dmesh.node.public-endpoint=192.168.5.104:51820" \
