@@ -13,6 +13,8 @@ DefenderLink Mesh is an open-source, fully decentralized Zero Trust Access overl
 
 https://defenderlinkmesh.com/
 
+![DefenderLink Mesh node console — Raft leader status, mesh node list and ledger chain height](docs/dashboard.png)
+
 ---
 
 ## How It Works
