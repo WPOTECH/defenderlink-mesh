@@ -8,7 +8,7 @@
 
 ## What Is DefenderLink Mesh?
 
-DefenderLink Mesh is an open-source, fully decentralized Zero Trust Access (ZTA) overlay network. It creates encrypted, per-service tunnels between machines — without any central controller, without cloud dependency, and without a single point of failure.
+DefenderLink Mesh is an open-source, fully decentralized, No Single Point of Failure Zero Trust Access (ZTA) overlay network. It creates encrypted, per-service tunnels between machines — without any central controller, without cloud dependency, and without a single point of failure.
 
 Every node is sovereign. Every connection is verified. Every service is isolated.
 
