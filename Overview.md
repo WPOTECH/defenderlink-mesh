@@ -297,22 +297,10 @@ The core is always free and open source under the MIT license. The subscription 
 
 ---
 
-## Part of the WPO Tech Ecosystem
-
-DefenderLink Mesh is the network security layer of the **5GMedLink** platform — private 5G networking for healthcare environments.
-
-| Product | Purpose |
-|---|---|
-| **5GMedLink** | Private 5G core (srsRAN + free5GC) for healthcare |
-| **DefenderLink AI Firewall & Router** | AI agent-powered edge firewall and router |
-| **DefenderLink Mesh** | Zero trust overlay network (this product) |
-
----
-
 ## Links
 
 - **Website:** https://defenderlink.io
-- **GitHub:** https://github.com/flyingwest/defenderlink-mesh
+- **GitHub:** https://github.com/wpotech/defenderlink-mesh
 - **Docker:** https://hub.docker.com/r/wpospace/defenderlink-mesh
 - **Install guide:** [INSTALL.md](INSTALL.md)
 - **Pricing:** https://defenderlink.io/pricing
